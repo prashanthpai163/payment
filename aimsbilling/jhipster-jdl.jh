@@ -1,0 +1,42 @@
+entity Customer {
+	customerId Integer,
+    customerName String,
+    customerEmail String,
+    customerAddress String
+}
+
+
+entity Product {
+	productId Integer,
+    productName String,
+    productDescription String,
+    cost Long
+}
+
+entity Transaction {
+   	transactionId String,
+	appTransactionId String,
+	amount Long,
+	currency String,
+	transactionType String,
+	status String,
+	transactionDatetime String,
+	gateway String
+}
+
+entity Invoice{
+	invoiceId Integer,
+	invoiceDate String
+	amount Integer
+}
+
+
+
+relationship OneToOne{
+	Invoice{transaction} to Transaction
+}
+
+relationship ManyToOne {
+	Transaction{customer} to Customer
+}
+microservice * with aimsbilling

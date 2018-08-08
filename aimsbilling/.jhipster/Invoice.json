@@ -1,0 +1,37 @@
+{
+    "name": "Invoice",
+    "fields": [
+        {
+            "fieldName": "invoiceId",
+            "fieldType": "Integer"
+        },
+        {
+            "fieldName": "invoiceDate",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "amount",
+            "fieldType": "Integer"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "one-to-one",
+            "relationshipName": "transaction",
+            "otherEntityName": "transaction",
+            "otherEntityField": "id",
+            "ownerSide": true,
+            "otherEntityRelationshipName": "invoice"
+        }
+    ],
+    "changelogDate": "20180727154221",
+    "entityTableName": "invoice",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "applications": "*",
+    "microserviceName": "aimsbilling"
+}

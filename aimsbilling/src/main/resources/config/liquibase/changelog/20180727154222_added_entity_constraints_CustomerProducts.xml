@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <!--
+        Added the constraints for entity CustomerProducts.
+    -->
+    <changeSet id="20180727154222-2" author="jhipster">
+        
+        <addForeignKeyConstraint baseColumnNames="customer_id_id"
+                                 baseTableName="customer_products"
+                                 constraintName="fk_customer_products_customer_id_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="customer"/>
+
+        <addForeignKeyConstraint baseColumnNames="app_transaction_id_id"
+                                 baseTableName="customer_products"
+                                 constraintName="fk_customer_products_app_transaction_id_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="transaction"/>
+
+        <addForeignKeyConstraint baseColumnNames="customer_products_id"
+                                 baseTableName="customer_products_product_id"
+                                 constraintName="fk_customer_products_product_id_customer_products_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="customer_products"/>
+        <addForeignKeyConstraint baseColumnNames="product_ids_id"
+                                 baseTableName="customer_products_product_id"
+                                 constraintName="fk_customer_products_product_id_product_ids_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="product"/>
+        
+    </changeSet>
+</databaseChangeLog>
