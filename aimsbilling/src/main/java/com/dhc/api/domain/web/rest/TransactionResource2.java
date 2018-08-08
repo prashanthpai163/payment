@@ -50,18 +50,25 @@ public class TransactionResource2 {
      * @return the ResponseEntity with status 201 (Created) and with body the new transaction, or with status 400 (Bad Request) if the transaction has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PostMapping("/transactions")
+    @PostMapping("/transactions2")
     @Timed
     public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction) throws URISyntaxException {
         log.debug("REST request to save Transaction : {}", transaction);
         if (transaction.getId() != null) {
             throw new BadRequestAlertException("A new transaction cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        
+        //To do the function based on transaction_type
         if(transaction.getTransactionType().equalsIgnoreCase("refund")){
         	RefundParams refund = new RefundParams();
+        	//to do refund
         	
+        	if(transaction.getGateway().equalsIgnoreCase("eway")){
+        		
+        	}
         }
+        
+        
+        //rest all same
         Transaction result = transactionRepository.save(transaction);
         transactionSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/transactions/" + result.getId()))
@@ -78,7 +85,7 @@ public class TransactionResource2 {
      * or with status 500 (Internal Server Error) if the transaction couldn't be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PutMapping("/transactions")
+    @PutMapping("/transactions2")
     @Timed
     public ResponseEntity<Transaction> updateTransaction(@RequestBody Transaction transaction) throws URISyntaxException {
         log.debug("REST request to update Transaction : {}", transaction);
@@ -97,7 +104,7 @@ public class TransactionResource2 {
      *
      * @return the ResponseEntity with status 200 (OK) and the list of transactions in body
      */
-    @GetMapping("/transactions")
+    @GetMapping("/transactions2")
     @Timed
     public List<Transaction> getAllTransactions() {
         log.debug("REST request to get all Transactions");
@@ -110,7 +117,7 @@ public class TransactionResource2 {
      * @param id the id of the transaction to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the transaction, or with status 404 (Not Found)
      */
-    @GetMapping("/transactions/{id}")
+    @GetMapping("/transactions2/{id}")
     @Timed
     public ResponseEntity<Transaction> getTransaction(@PathVariable Long id) {
         log.debug("REST request to get Transaction : {}", id);
@@ -124,7 +131,7 @@ public class TransactionResource2 {
      * @param id the id of the transaction to delete
      * @return the ResponseEntity with status 200 (OK)
      */
-    @DeleteMapping("/transactions/{id}")
+    @DeleteMapping("/transactions2/{id}")
     @Timed
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
         log.debug("REST request to delete Transaction : {}", id);
@@ -141,7 +148,7 @@ public class TransactionResource2 {
      * @param query the query of the transaction search
      * @return the result of the search
      */
-    @GetMapping("/_search/transactions")
+    @GetMapping("/_search/transactions2")
     @Timed
     public List<Transaction> searchTransactions(@RequestParam String query) {
         log.debug("REST request to search Transactions for query {}", query);
