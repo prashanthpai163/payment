@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cascade;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.data.elasticsearch.annotations.Document;
 import java.io.Serializable;
 import java.util.Objects;
@@ -29,7 +31,7 @@ public class Transaction implements Serializable {
     private String appTransactionId;
 
     @Column(name = "amount")
-    private Long amount;
+    private int amount;
 
     @Column(name = "currency")
     private String currency;
@@ -85,16 +87,16 @@ public class Transaction implements Serializable {
         this.appTransactionId = appTransactionId;
     }
 
-    public Long getAmount() {
+    public int getAmount() {
         return amount;
     }
 
-    public Transaction amount(Long amount) {
+    public Transaction amount(int amount) {
         this.amount = amount;
         return this;
     }
 
-    public void setAmount(Long amount) {
+    public void setAmount(int amount) {
         this.amount = amount;
     }
 

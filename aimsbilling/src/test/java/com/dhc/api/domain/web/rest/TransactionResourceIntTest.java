@@ -49,8 +49,8 @@ public class TransactionResourceIntTest {
     private static final String DEFAULT_APP_TRANSACTION_ID = "AAAAAAAAAA";
     private static final String UPDATED_APP_TRANSACTION_ID = "BBBBBBBBBB";
 
-    private static final Long DEFAULT_AMOUNT = 1L;
-    private static final Long UPDATED_AMOUNT = 2L;
+    private static final int DEFAULT_AMOUNT = 1;
+    private static final int UPDATED_AMOUNT = 2;
 
     private static final String DEFAULT_CURRENCY = "AAAAAAAAAA";
     private static final String UPDATED_CURRENCY = "BBBBBBBBBB";
@@ -193,7 +193,7 @@ public class TransactionResourceIntTest {
             .andExpect(jsonPath("$.[*].id").value(hasItem(transaction.getId().intValue())))
             .andExpect(jsonPath("$.[*].transactionId").value(hasItem(DEFAULT_TRANSACTION_ID.toString())))
             .andExpect(jsonPath("$.[*].appTransactionId").value(hasItem(DEFAULT_APP_TRANSACTION_ID.toString())))
-            .andExpect(jsonPath("$.[*].amount").value(hasItem(DEFAULT_AMOUNT.intValue())))
+            .andExpect(jsonPath("$.[*].amount").value(hasItem(DEFAULT_AMOUNT)))
             .andExpect(jsonPath("$.[*].currency").value(hasItem(DEFAULT_CURRENCY.toString())))
             .andExpect(jsonPath("$.[*].transactionType").value(hasItem(DEFAULT_TRANSACTION_TYPE.toString())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))
@@ -215,7 +215,7 @@ public class TransactionResourceIntTest {
             .andExpect(jsonPath("$.id").value(transaction.getId().intValue()))
             .andExpect(jsonPath("$.transactionId").value(DEFAULT_TRANSACTION_ID.toString()))
             .andExpect(jsonPath("$.appTransactionId").value(DEFAULT_APP_TRANSACTION_ID.toString()))
-            .andExpect(jsonPath("$.amount").value(DEFAULT_AMOUNT.intValue()))
+            .andExpect(jsonPath("$.amount").value(DEFAULT_AMOUNT))
             .andExpect(jsonPath("$.currency").value(DEFAULT_CURRENCY.toString()))
             .andExpect(jsonPath("$.transactionType").value(DEFAULT_TRANSACTION_TYPE.toString()))
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
@@ -330,7 +330,7 @@ public class TransactionResourceIntTest {
             .andExpect(jsonPath("$.[*].id").value(hasItem(transaction.getId().intValue())))
             .andExpect(jsonPath("$.[*].transactionId").value(hasItem(DEFAULT_TRANSACTION_ID.toString())))
             .andExpect(jsonPath("$.[*].appTransactionId").value(hasItem(DEFAULT_APP_TRANSACTION_ID.toString())))
-            .andExpect(jsonPath("$.[*].amount").value(hasItem(DEFAULT_AMOUNT.intValue())))
+            .andExpect(jsonPath("$.[*].amount").value(hasItem(DEFAULT_AMOUNT)))
             .andExpect(jsonPath("$.[*].currency").value(hasItem(DEFAULT_CURRENCY.toString())))
             .andExpect(jsonPath("$.[*].transactionType").value(hasItem(DEFAULT_TRANSACTION_TYPE.toString())))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())))

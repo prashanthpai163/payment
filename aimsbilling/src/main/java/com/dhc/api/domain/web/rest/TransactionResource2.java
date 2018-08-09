@@ -1,27 +1,50 @@
 package com.dhc.api.domain.web.rest;
 
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.codahale.metrics.annotation.Timed;
-import com.dhc.api.domain.domain.RefundParams;
 import com.dhc.api.domain.domain.Transaction;
 import com.dhc.api.domain.repository.TransactionRepository;
 import com.dhc.api.domain.repository.search.TransactionSearchRepository;
 import com.dhc.api.domain.web.rest.errors.BadRequestAlertException;
 import com.dhc.api.domain.web.rest.util.HeaderUtil;
+import com.eway.payment.rapid.sdk.RapidClient;
+import com.eway.payment.rapid.sdk.RapidSDK;
+import com.eway.payment.rapid.sdk.beans.external.Refund;
+import com.eway.payment.rapid.sdk.beans.internal.RefundDetails;
+import com.eway.payment.rapid.sdk.output.RefundResponse;
+import com.stripe.Stripe;
+import com.stripe.exception.APIConnectionException;
+import com.stripe.exception.APIException;
+import com.stripe.exception.AuthenticationException;
+import com.stripe.exception.CardException;
+import com.stripe.exception.InvalidRequestException;
+
 import io.github.jhipster.web.util.ResponseUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing Transaction.
@@ -37,7 +60,13 @@ public class TransactionResource2 {
     private final TransactionRepository transactionRepository;
 
     private final TransactionSearchRepository transactionSearchRepository;
+    
+    private static String apiKey="C3AB9CgeTmTPFcVeKnxZXT8QKu26px4oz6JxeWTC9fY9O6C8NFiNc5fYJ6OqOFzo9YrJVp";
+	private static String password="0I5TbujC";
+	private static String rapidEnd="Sandbox";
 
+	private static String stripe_apiKey="sk_test_MUVjvax4c6FLnvNpZHPVDCPP";
+	
     public TransactionResource2(TransactionRepository transactionRepository, TransactionSearchRepository transactionSearchRepository) {
         this.transactionRepository = transactionRepository;
         this.transactionSearchRepository = transactionSearchRepository;
@@ -59,11 +88,101 @@ public class TransactionResource2 {
         }
         //To do the function based on transaction_type
         if(transaction.getTransactionType().equalsIgnoreCase("refund")){
-        	RefundParams refund = new RefundParams();
+        	//RefundParams refund = new RefundParams();
         	//to do refund
         	
         	if(transaction.getGateway().equalsIgnoreCase("eway")){
         		
+        		String ref_id = transaction.getAppTransactionId();
+        		ref_id=ref_id.substring(7);
+        		System.out.println(ref_id);
+        		
+        		//prop = (Properties) session.getAttribute(Constants.PROPERTIES);
+        	
+        		RapidClient client = RapidSDK.newRapidClient(apiKey, password, rapidEnd);
+        		RefundDetails refundDetails = new RefundDetails();
+        		
+        		refundDetails.setOriginalTransactionID(ref_id);
+        		refundDetails.setTotalAmount(transaction.getAmount());
+        		Refund refund = new Refund();
+        		refund.setRefundDetails(refundDetails);
+        		RefundResponse response = client.refund(refund);
+        		System.out.println(response.getTransactionStatus().isStatus());
+        		if (response.getTransactionStatus().isStatus()) {
+        			System.out.println("Refund successful! ID: " + response.getTransactionStatus().getTransactionID());
+        			int refID = response.getTransactionStatus().getTransactionID();
+        			String app_ref = "ew_refund_" + refID;
+        			transaction.transactionId(ref_id);
+        			transaction.setAppTransactionId(app_ref);
+        			transaction.setStatus("success");
+        			
+        			LocalDateTime now = LocalDateTime.now();
+        			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        			String dateTime = now.format(formatter);
+        			
+        			transaction.setTransactionDatetime(dateTime);
+        		}else {
+        				if (!response.getErrors().isEmpty()) {
+        					String errorCode=null;
+        					for (String errorcode : response.getErrors()) {
+        						System.out.println("Error Message: " + RapidSDK.userDisplayMessage(errorcode, "en"));
+        						errorCode = errorcode.concat(RapidSDK.userDisplayMessage(errorcode, "en"));
+        						        					}
+        					log.error("Sorry, your refund failed with ErrorCode-->"+errorCode);
+        					return ResponseEntity.created(new URI("/api/transactions/" + errorCode))
+        				            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, errorCode))
+        				            .body(null);
+        					
+        				} else {
+        					System.out.println("Sorry, your refund failed");
+        					log.error("Sorry, your refund failed");
+        				}
+        				
+        			}
+        	}
+        	
+        	//for Stripe
+        	else{
+        		
+        		com.stripe.model.Refund refund = null;
+        		Stripe.apiKey = stripe_apiKey;
+        		
+        		String ref_id = transaction.getAppTransactionId();
+        		ref_id=ref_id.substring(8);
+        		System.out.println(ref_id);
+
+        		Map<String, Object> refundParams = new HashMap<String, Object>();
+        		refundParams.put("charge", ref_id);
+        		refundParams.put("amount", transaction.getAmount());
+        		try {
+        			refund=com.stripe.model.Refund.create(refundParams);
+        		} catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException
+        				| APIException e1) {
+        			// TODO Auto-generated catch block
+        			e1.printStackTrace();
+        		}
+        		if(refund.getId()!=null){
+        		String refundId=refund.getId();
+        		//httpResp.setRefId(refundId);
+        		String refund_app_refId="stp_refund_"+refundId;
+        		transaction.setTransactionId(refundId);
+        		transaction.setAppTransactionId(refund_app_refId);
+        		transaction.setStatus("success");
+        		
+        		LocalDateTime now = LocalDateTime.now();
+    			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    			String dateTime = now.format(formatter);
+    			
+    			transaction.setTransactionDatetime(dateTime);
+    			
+        		}
+        		else{
+        			
+        			log.error("Sorry, your refund failed");
+					return ResponseEntity.created(new URI("/api/transactions/"))
+				            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, "Refund Failed"))
+				            .body(null);
+        		}
         	}
         }
         
